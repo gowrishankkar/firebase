@@ -1,24 +1,74 @@
-const cafeList = document.querySelector('#cafe-list');
+const cafeList = document.querySelector("#cafe-list");
+const form = document.querySelector("#add-cafe-form");
 
 // create element & render cafe
-function renderCafe(doc){
-    let li = document.createElement('li');
-    let name = document.createElement('span');
-    let city = document.createElement('span');
+function renderCafe(doc) {
+  let li = document.createElement("li");
+  let name = document.createElement("span");
+  let city = document.createElement("span");
+  let cross = document.createElement("div");
 
-    li.setAttribute('data-id', doc.id);
-    name.textContent = doc.data().name;
-    city.textContent = doc.data().city;
+  li.setAttribute("data-id", doc.id);
+  name.textContent = doc.data().name;
+  city.textContent = doc.data().city;
+  cross.textContent = "x";
 
-    li.appendChild(name);
-    li.appendChild(city);
+  li.appendChild(name);
+  li.appendChild(city);
+  li.appendChild(cross).setAttribute(
+    "style",
+    "margin:20px; color:white; background:grey"
+  );
 
-    cafeList.appendChild(li);
+  cafeList.appendChild(li);
+  //deleting data
+  cross.addEventListener("click", e => {
+    e.stopPropagation();
+    let id = e.target.parentElement.getAttibute("data-id");
+    console.log(id);
+    db.collection("cafes")
+      .doc(id)
+      .delete();
+  });
 }
 
 // getting data
-db.collection('cafes').get().then(snapshot => {
-    snapshot.docs.forEach(doc => {
-        renderCafe(doc);
-    });
+// db.collection("cafes")
+//   .where("city", "==", "sulur")
+//   .orderBy("name")
+//   .get()
+//   .then(snapshot => {
+//     snapshot.docs.forEach(doc => {
+//       renderCafe(doc);
+//       console.log(doc.id, "=>", doc.data());
+//     });
+// });
+
+//saving data
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  db.collection("cafes").add({
+    name: form.name.value,
+    city: form.city.value
+  });
+  form.name.value = "";
+  form.city.value = "";
 });
+
+//real time listner
+db.collection("cafes")
+  .orderBy("city")
+  .onSnapshot(snapshot => {
+    let changes = snapshot.docChanges();
+    console.log(changes);
+    changes.forEach(change => {
+      // if (change.type == "added") {
+      renderCafe(change.doc);
+      //   console.log(change.type);
+      // } else if (change.type == "removed") {
+      //   console.log(change.type);
+      //   let li = cafeList.querySelector("data-id");
+      //   cafeList.removeChild(li);
+      // }
+    });
+  });

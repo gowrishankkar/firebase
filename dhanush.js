@@ -1,7 +1,3 @@
-//var a = 5;
-var b = 10;
-var c = 20;
-console.log("a+b=");
 result = a + b;
 console.log("result");
 console.log("result", result);
